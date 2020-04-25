@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zed058.smbms.dao.UserMapper">
+
+    <select id="findUserByUserCode" parameterType="string" resultType="int">
+        SELECT count(1)
+        FROM smbms_user
+        where userCode=#{userCode}
+    </select>
+
+    <select id="findAll" resultType="user">
+        SELECT *
+        FROM smbms_user
+    </select>
+
+    <insert id="add" parameterType="user">
+        insert into smbms_user(userCode, userName, userPassword, gender, birthday, phone, address, userRole, createdBy,
+                               creationDate, modifyBy, modifyDate,idPicPath)
+        values (#{userCode}, #{userName}, #{userPassword}, #{gender}, #{birthday}, #{phone}, #{address}, #{userRole},
+                #{createdBy}, #{creationDate}, #{modifyBy}, #{modifyDate}, #{idPicPath})
+    </insert>
+
+    <delete id="delete" parameterType="int">
+        delete
+        from smbms_user
+        where id = #{id}
+    </delete>
+
+    <select id="getUserByUserCode" parameterType="string" resultType="user">
+        select *
+        from smbms_user
+        where userCode = #{userCode}
+    </select>
+
+    <!--查询符合条件的所有用户，带分页-->
+    <select id="findAllByConditionWithPage" resultType="user">
+        select u.*,r.roleName as userRoleName from smbms_user u,smbms_role r
+        where u.userRole = r.id
+        <if test="userName !=null and userName != ''">
+            and userName like concat('%',#{userName},'%')
+        </if>
+        <if test="userRole !=null and userRole != 0">
+            and userRole=#{userRole}
+        </if>
+        limit #{from},#{pageSize}
+    </select>
+
+    <!--查询符合条件的用户总数-->
+    <select id="getCountByCondition" resultType="int">
+        select count(1) from smbms_user
+        <where>
+            <if test="userName !=null and userName != ''">
+                and userName like concat('%',#{userName},'%')
+            </if>
+            <if test="userRole !=null and userRole != 0">
+                and userRole=#{userRole}
+            </if>
+        </where>
+    </select>
+
+    <select id="findById" parameterType="int" resultType="user">
+        select *
+        from smbms_user
+        where id = #{id}
+    </select>
+
+    <update id="update" parameterType="user">
+        update smbms_user
+        <set>
+            <if test="userCode != null and userCode != ''">userCode=#{userCode},</if>
+            <if test="userName != null and userName != ''">userName=#{userName},</if>
+            <if test="userPassword != null and userPassword != ''">userPassword=#{userPassword},</if>
+            <if test="gender != null">gender=#{gender},</if>
+            <if test="birthday != null">birthday=#{birthday},</if>
+            <if test="userRole != null">userRole=#{userRole},</if>
+            <if test="createdBy != null">createdBy=#{createdBy},</if>
+            <if test="creationDate != null">creationDate=#{creationDate},</if>
+            <if test="modifyBy != null">modifyBy=#{modifyBy},</if>
+            <if test="modifyDate != null">modifyDate=#{modifyDate},</if>
+            <if test="phone != null and phone != ''">phone=#{phone},</if>
+            <if test="address != null and address != ''">address=#{address},</if>
+        </set>
+        where id=#{id}
+    </update>
+</mapper>

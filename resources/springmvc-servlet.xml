@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--控制器层的组件扫描-->
+    <context:component-scan base-package="cn.zed058.smbms.controller"/>
+
+    <!--<bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+         <property name="converters">
+             <set>
+                 <bean class="cn.zed058.smbms.converter.StrToDateConverter">
+                     <property name="formater" value="yyyy-MM-dd"/>
+                 </bean>
+             </set>
+         </property>
+     </bean>-->
+
+    <!--mvc的注解驱动-->
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <!-- StringHttpMessageConverter：字串的消息转换器 -->
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>application/json;charset=UTF-8</value>
+                        <value>application/xml;charset=UTF-8</value>
+                        <value>text/html;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+
+            <!--fastjson的消息转换器，可以直接解析对象-->
+            <bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>application/json;charset=UTF-8</value>
+                        <value>application/xml;charset=UTF-8</value>
+                        <value>text/html;charset=UTF-8</value>
+                    </list>
+                </property>
+                <property name="features">
+                    <list>
+                        <value>WriteDateUseDateFormat</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <!--视图解析器-->
+    <!-- <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+         <property name="prefix" value="/WEB-INF/jsp/" />
+         <property name="suffix" value=".jsp" />
+     </bean>-->
+    <!-- 配置多视图解析器 -->
+    <bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+        <property name="mediaTypes">
+            <map>
+                <entry key="json" value="application/json;charset=UTF-8"/>
+                <entry key="xml" value="application/xml;charset=UTF-8"/>
+                <entry key="html" value="text/html;charset=UTF-8"/>
+            </map>
+        </property>
+        <property name="viewResolvers">
+            <list>
+                <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+                    <property name="prefix" value="/WEB-INF/jsp/"/>
+                    <property name="suffix" value=".jsp"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <!--静态文件处理 mapping请求的路径 location资源文件的位置-->
+    <mvc:resources mapping="/statics/**" location="/statics/"/>
+
+    <!--全局异常处理的配置-->
+    <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="exceptionMappings">
+            <props>
+                <!--key：异常类型  值：逻辑视图名 显示异常的页面-->
+                <prop key="java.lang.RuntimeException">error</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!--文件上传解析器-->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="5000000"/>
+        <property name="defaultEncoding" value="UTF-8"/>
+    </bean>
+
+    <!-- 配置拦截器 -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!-- 下面的子节点是由顺序的 mapping：拦截哪些请求 exclude-mapping：不拦截哪些请求-->
+            <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/"/>
+            <mvc:exclude-mapping path="/user/doLogin.html"/>
+            <bean class="cn.zed058.smbms.interceptor.SysInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+</beans>
